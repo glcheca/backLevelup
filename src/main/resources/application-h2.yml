@@ -1,0 +1,20 @@
+# Perfil TEMPORAL para desarrollo sin PostgreSQL.
+# El objetivo es PostgreSQL + Flyway; este perfil solo desbloquea el flujo local.
+#
+#   .\gradlew.bat bootRun --args="--spring.profiles.active=h2"
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:levelup;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false
+
+app:
+  auth:
+    cookie-secure: false
