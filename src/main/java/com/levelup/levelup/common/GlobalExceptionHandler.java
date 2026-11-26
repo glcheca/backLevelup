@@ -5,9 +5,11 @@ import java.util.Map;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -47,6 +49,25 @@ public class GlobalExceptionHandler {
         ProblemDetail.forStatusAndDetail(
             HttpStatus.CONFLICT, "El recurso entra en conflicto con datos existentes.");
     problem.setTitle("Conflicto");
+    return problem;
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ProblemDetail handleUnreadableBody(HttpMessageNotReadableException exception) {
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.BAD_REQUEST, "El cuerpo de la petición no tiene el formato esperado.");
+    problem.setTitle("Solicitud inválida");
+    return problem;
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException exception) {
+    ProblemDetail problem =
+        ProblemDetail.forStatusAndDetail(
+            HttpStatus.BAD_REQUEST,
+            "El parámetro '%s' tiene un valor inválido.".formatted(exception.getName()));
+    problem.setTitle("Solicitud inválida");
     return problem;
   }
 }

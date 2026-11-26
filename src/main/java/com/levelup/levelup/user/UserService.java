@@ -36,7 +36,7 @@ public class UserService {
     return UserResponse.from(userRepository.save(user));
   }
 
-  User requireUser(UUID userId) {
+  public User requireUser(UUID userId) {
     return userRepository
         .findById(userId)
         .orElseThrow(() -> ApiException.notFound("Usuario no encontrado"));
