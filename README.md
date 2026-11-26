@@ -51,7 +51,9 @@ API REST para la app de productividad académica LevelUp.
 
 La API queda en `http://localhost:8080` y todas las rutas cuelgan de `/api/v1`.
 
-## Endpoints disponibles (Etapa 0)
+## Endpoints disponibles
+
+Etapa 0 — autenticación y perfil:
 
 | Método | Ruta | Descripción |
 |---|---|---|
@@ -62,6 +64,27 @@ La API queda en `http://localhost:8080` y todas las rutas cuelgan de `/api/v1`.
 | GET | `/api/v1/me` | Perfil del usuario autenticado |
 | PATCH | `/api/v1/me` | Actualiza nombre, zona horaria o tema |
 | GET | `/actuator/health` | Estado del servicio |
+
+Etapa 1 — núcleo académico:
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/v1/courses?archived=&page=&size=` | Lista paginada de cursos |
+| POST | `/api/v1/courses` | Crea un curso |
+| GET | `/api/v1/courses/{id}` | Detalle con horario |
+| PATCH | `/api/v1/courses/{id}` | Actualización parcial |
+| PATCH | `/api/v1/courses/{id}/archive` | Archiva o desarchiva (`{archived}`) |
+| DELETE | `/api/v1/courses/{id}` | Borra el curso (eventos y tareas quedan sin curso) |
+| GET | `/api/v1/courses/{id}/schedule` | Bloques de horario del curso |
+| POST | `/api/v1/courses/{id}/schedule` | Crea un bloque (devuelve `warning` si solapa) |
+| GET | `/api/v1/schedule` | Horario completo del usuario |
+| PATCH | `/api/v1/schedule/{blockId}` | Edita un bloque |
+| DELETE | `/api/v1/schedule/{blockId}` | Borra un bloque |
+| GET | `/api/v1/events?from=&to=&courseId=&type=` | Eventos por rango (solapamiento) |
+| POST/PATCH/DELETE | `/api/v1/events[/{id}]` | CRUD de eventos (`all_day` se normaliza a la TZ del usuario) |
+| GET | `/api/v1/tasks?status=&courseId=&dueBefore=` | Tareas filtradas |
+| POST/PATCH/DELETE | `/api/v1/tasks[/{id}]` | CRUD de tareas (PATCH recibe el objeto completo) |
+| PATCH | `/api/v1/tasks/{id}/complete` | Marca como hecha y fija `completed_at` |
 
 ## Variables de entorno
 
