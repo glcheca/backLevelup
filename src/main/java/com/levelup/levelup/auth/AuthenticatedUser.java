@@ -2,5 +2,4 @@ package com.levelup.levelup.auth;
 
 import java.util.UUID;
 
-public record AuthenticatedUser(UUID id) {
-}
+public record AuthenticatedUser(UUID id) {}

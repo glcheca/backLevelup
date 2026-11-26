@@ -91,6 +91,17 @@ Los tests usan el perfil `test` con H2 en memoria, así que **no necesitan
 PostgreSQL**. Cubren el flujo completo de autenticación (registro, duplicado,
 401, perfil, login fallido, rotación de refresh y logout).
 
+## Calidad de código
+
+```powershell
+.\gradlew.bat spotlessApply        # formatea (google-java-format) + quita imports sin usar
+.\gradlew.bat spotlessCheck        # verifica el formato
+.\gradlew.bat checkstyleMain checkstyleTest   # reglas en config/checkstyle/checkstyle.xml
+```
+
+`gradlew build` ejecuta `spotlessCheck` y `checkstyle` junto con los tests, así que
+el CI falla si el formato o el estilo no se cumplen.
+
 ## Estructura
 
 ```
