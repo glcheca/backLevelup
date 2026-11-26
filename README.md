@@ -5,7 +5,7 @@ API REST para la app de productividad académica LevelUp.
 ## Stack
 
 - Spring Boot 4.2 · Java 21 (Gradle toolchain con auto-descarga vía foojay)
-- Spring Data JPA + PostgreSQL 17 + Flyway
+- Spring Data JPA + PostgreSQL (17+) + Flyway
 - Spring Security con JWT de acceso + refresh token en cookie `HttpOnly`
 - Gradle Wrapper (no requiere Maven)
 
