@@ -1,0 +1,16 @@
+package com.levelup.levelup.grade;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AssessmentRepository extends JpaRepository<Assessment, UUID> {
+
+  List<Assessment> findByCourseId(UUID courseId, Sort sort);
+
+  List<Assessment> findByCourseUserId(UUID userId, Sort sort);
+
+  Optional<Assessment> findByIdAndCourseUserId(UUID id, UUID userId);
+}

@@ -86,6 +86,23 @@ Etapa 1 — núcleo académico:
 | POST/PATCH/DELETE | `/api/v1/tasks[/{id}]` | CRUD de tareas (PATCH recibe el objeto completo) |
 | PATCH | `/api/v1/tasks/{id}/complete` | Marca como hecha y fija `completed_at` |
 
+Etapa 2 — apuntes y calificaciones:
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/v1/notes?courseId=&tag=&q=&pinned=&page=&size=` | Apuntes filtrados (búsqueda sin tildes) |
+| POST | `/api/v1/notes` | Crea un apunte |
+| GET | `/api/v1/notes/{id}` | Detalle con el markdown completo |
+| PATCH | `/api/v1/notes/{id}` | Actualiza (recibe el objeto completo) |
+| PATCH | `/api/v1/notes/{id}/pin` | Fija o desfija (`{pinned}`) |
+| DELETE | `/api/v1/notes/{id}` | Borra el apunte |
+| GET | `/api/v1/notes/tags` | Etiquetas distintas del usuario |
+| GET | `/api/v1/courses/{id}/grades` | Evaluaciones del curso |
+| POST | `/api/v1/courses/{id}/grades` | Crea una evaluación |
+| PATCH/DELETE | `/api/v1/grades[/{id}]` | Edita o borra una evaluación |
+| GET | `/api/v1/courses/{id}/grades/summary?target=14` | Promedio, peso pendiente y "qué necesito" |
+| GET | `/api/v1/grades/summary?target=14` | Resumen de todos los cursos activos |
+
 ## Variables de entorno
 
 | Variable | Por defecto | Descripción |
@@ -111,8 +128,10 @@ Nunca uses `ddl-auto=update`: el esquema se versiona con SQL.
 ```
 
 Los tests usan el perfil `test` con H2 en memoria, así que **no necesitan
-PostgreSQL**. Cubren el flujo completo de autenticación (registro, duplicado,
-401, perfil, login fallido, rotación de refresh y logout).
+PostgreSQL**. Son 48 tests que cubren autenticación (registro, duplicado, 401,
+perfil, login fallido, rotación de refresh y logout), cursos y horario, eventos,
+tareas, apuntes (búsqueda con tildes, etiquetas, aislamiento por usuario) y
+calificaciones (promedio ponderado, pesos incompletos, proyección y validación).
 
 ## Calidad de código
 
@@ -129,8 +148,14 @@ el CI falla si el formato o el estilo no se cumplen.
 
 ```
 com.levelup.levelup
-├─ config/   SecurityConfig, JwtProperties
-├─ common/   ApiException, GlobalExceptionHandler
-├─ auth/     JWT, refresh tokens, /auth
-└─ user/     entidad User, /me
+├─ config/     SecurityConfig, JwtProperties
+├─ common/     ApiException, GlobalExceptionHandler, PageResponse, TextNormalizer
+├─ auth/       JWT, refresh tokens, /auth
+├─ user/       entidad User, /me
+├─ course/     curso + horario (class_block)
+├─ event/      eventos
+├─ task/       tareas y subtareas
+├─ note/       apuntes y etiquetas (búsqueda normalizada)
+├─ grade/      evaluaciones y promedio ponderado
+└─ reminder/   ReminderHook (se implementa en la Etapa 3)
 ```
