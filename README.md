@@ -103,6 +103,21 @@ Etapa 2 — apuntes y calificaciones:
 | GET | `/api/v1/courses/{id}/grades/summary?target=14` | Promedio, peso pendiente y "qué necesito" |
 | GET | `/api/v1/grades/summary?target=14` | Resumen de todos los cursos activos |
 
+Etapa 3 — recordatorios, notificaciones y búsqueda:
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/v1/reminders?status=` | Recordatorios propios (pending, sent, failed, cancelled) |
+| POST | `/api/v1/reminders` | Crea un recordatorio propio o vinculado a evento/tarea |
+| DELETE | `/api/v1/reminders/{id}` | Borra un recordatorio |
+| GET | `/api/v1/notifications?unreadOnly=&page=&size=` | Notificaciones in-app paginadas |
+| GET | `/api/v1/notifications/unread-count` | `{ unread }` para el badge |
+| PATCH | `/api/v1/notifications/{id}/read` | Marca una como leída |
+| PATCH | `/api/v1/notifications/read-all` | Marca todas como leídas |
+| GET | `/api/v1/search?q=` | Búsqueda global (cursos, eventos, tareas, apuntes; máx. 5 por tipo) |
+| POST | `/api/v1/me/password` | Cambia la contraseña validando la actual |
+| DELETE | `/api/v1/me` | Borra la cuenta y todo su contenido |
+
 ## Variables de entorno
 
 | Variable | Por defecto | Descripción |
@@ -128,10 +143,12 @@ Nunca uses `ddl-auto=update`: el esquema se versiona con SQL.
 ```
 
 Los tests usan el perfil `test` con H2 en memoria, así que **no necesitan
-PostgreSQL**. Son 48 tests que cubren autenticación (registro, duplicado, 401,
+PostgreSQL**. Son 64 tests que cubren autenticación (registro, duplicado, 401,
 perfil, login fallido, rotación de refresh y logout), cursos y horario, eventos,
-tareas, apuntes (búsqueda con tildes, etiquetas, aislamiento por usuario) y
-calificaciones (promedio ponderado, pesos incompletos, proyección y validación).
+tareas, apuntes (búsqueda con tildes, etiquetas, aislamiento por usuario),
+calificaciones (promedio ponderado, pesos incompletos, proyección y validación)
+y Etapa 3 (recordatorios, job con reloj fijo, notificaciones, búsqueda global,
+cambio de contraseña y borrado de cuenta).
 
 ## Calidad de código
 
@@ -157,5 +174,7 @@ com.levelup.levelup
 ├─ task/       tareas y subtareas
 ├─ note/       apuntes y etiquetas (búsqueda normalizada)
 ├─ grade/      evaluaciones y promedio ponderado
-└─ reminder/   ReminderHook (se implementa en la Etapa 3)
+├─ reminder/   recordatorios, job de despacho y hook de eventos/tareas
+├─ notification/ notificaciones in-app
+└─ search/     búsqueda global (cursos, eventos, tareas, apuntes)
 ```

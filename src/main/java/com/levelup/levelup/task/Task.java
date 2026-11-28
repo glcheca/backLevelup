@@ -16,12 +16,15 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "task")
 public class Task extends AuditableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
@@ -56,6 +59,10 @@ public class Task extends AuditableEntity {
   @Convert(converter = SubtaskListConverter.class)
   @Column(name = "subtasks_json", nullable = false, length = 4000)
   private List<Subtask> subtasks = new ArrayList<>();
+
+  /** Minutos de antelación del recordatorio; `null` = sin recordatorio. */
+  @Column(name = "reminder_offset_minutes")
+  private Integer reminderOffsetMinutes;
 
   protected Task() {}
 
@@ -142,5 +149,13 @@ public class Task extends AuditableEntity {
 
   public void setSubtasks(List<Subtask> subtasks) {
     this.subtasks = subtasks == null ? new ArrayList<>() : subtasks;
+  }
+
+  public Integer getReminderOffsetMinutes() {
+    return reminderOffsetMinutes;
+  }
+
+  public void setReminderOffsetMinutes(Integer reminderOffsetMinutes) {
+    this.reminderOffsetMinutes = reminderOffsetMinutes;
   }
 }

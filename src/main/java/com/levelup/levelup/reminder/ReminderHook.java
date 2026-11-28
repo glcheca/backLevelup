@@ -4,18 +4,29 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Punto de extensión para los recordatorios (Etapa 3).
+ * Punto de extensión que usan eventos y tareas para mantener sus recordatorios.
  *
- * <p>En la Etapa 1 solo se avisa de los cambios que podrían necesitar un recordatorio; la
- * implementación real (tabla `reminder` + job) llega en la Etapa 3 sin tocar eventos ni tareas.
+ * <p>`triggerAt == null` significa "no hay recordatorio" y cancela los pendientes del objetivo.
  */
 public interface ReminderHook {
 
-  void onEventChanged(UUID userId, UUID eventId, Instant triggerAt);
+  void onEventChanged(
+      UUID userId,
+      UUID eventId,
+      String title,
+      String body,
+      Instant triggerAt,
+      Integer offsetMinutes);
 
   void onEventRemoved(UUID userId, UUID eventId);
 
-  void onTaskChanged(UUID userId, UUID taskId, Instant dueAt);
+  void onTaskChanged(
+      UUID userId,
+      UUID taskId,
+      String title,
+      String body,
+      Instant triggerAt,
+      Integer offsetMinutes);
 
   void onTaskRemoved(UUID userId, UUID taskId);
 }

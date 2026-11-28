@@ -4,7 +4,14 @@ import com.levelup.levelup.user.User;
 import java.util.UUID;
 
 public record UserResponse(
-    UUID id, String email, String name, String timezone, String locale, String theme) {
+    UUID id,
+    String email,
+    String name,
+    String timezone,
+    String locale,
+    String theme,
+    boolean notifyEvents,
+    boolean notifyTasks) {
 
   public static UserResponse from(User user) {
     return new UserResponse(
@@ -13,6 +20,8 @@ public record UserResponse(
         user.getName(),
         user.getTimezone(),
         user.getLocale(),
-        user.getTheme());
+        user.getTheme(),
+        user.isNotifyEvents(),
+        user.isNotifyTasks());
   }
 }

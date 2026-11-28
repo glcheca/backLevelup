@@ -22,6 +22,7 @@ public final class EventMapper {
         event.isAllDay(),
         event.getLocation(),
         event.getStatus(),
+        event.getReminderOffsetMinutes(),
         event.getCreatedAt(),
         event.getUpdatedAt());
   }

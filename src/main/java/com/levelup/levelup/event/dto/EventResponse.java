@@ -18,5 +18,6 @@ public record EventResponse(
     boolean allDay,
     String location,
     EventStatus status,
+    Integer reminderOffsetMinutes,
     Instant createdAt,
     Instant updatedAt) {}

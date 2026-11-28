@@ -24,4 +24,7 @@ public record TaskRequest(
         Integer priority,
     Instant dueAt,
     @Size(max = 50, message = "Una tarea admite como máximo 50 subtareas") @Valid
-        List<SubtaskRequest> subtasks) {}
+        List<SubtaskRequest> subtasks,
+    @Min(value = 0, message = "El aviso no puede ser negativo")
+        @Max(value = 20160, message = "El aviso no puede superar los 14 días")
+        Integer reminderOffsetMinutes) {}

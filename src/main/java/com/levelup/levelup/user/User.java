@@ -33,6 +33,12 @@ public class User {
   @Column(nullable = false, length = 10)
   private String theme = "system";
 
+  @Column(name = "notify_events", nullable = false)
+  private boolean notifyEvents = true;
+
+  @Column(name = "notify_tasks", nullable = false)
+  private boolean notifyTasks = true;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -115,6 +121,22 @@ public class User {
 
   public void setTheme(String theme) {
     this.theme = theme;
+  }
+
+  public boolean isNotifyEvents() {
+    return notifyEvents;
+  }
+
+  public void setNotifyEvents(boolean notifyEvents) {
+    this.notifyEvents = notifyEvents;
+  }
+
+  public boolean isNotifyTasks() {
+    return notifyTasks;
+  }
+
+  public void setNotifyTasks(boolean notifyTasks) {
+    this.notifyTasks = notifyTasks;
   }
 
   public Instant getCreatedAt() {

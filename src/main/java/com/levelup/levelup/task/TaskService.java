@@ -2,6 +2,7 @@ package com.levelup.levelup.task;
 
 import com.levelup.levelup.common.ApiException;
 import com.levelup.levelup.common.PageResponse;
+import com.levelup.levelup.common.ReminderText;
 import com.levelup.levelup.course.CourseService;
 import com.levelup.levelup.event.EventService;
 import com.levelup.levelup.reminder.ReminderHook;
@@ -12,6 +13,8 @@ import com.levelup.levelup.user.User;
 import com.levelup.levelup.user.UserService;
 import jakarta.persistence.criteria.Predicate;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -72,17 +75,18 @@ public class TaskService {
     Task task = new Task(user, request.title().trim());
     apply(task, request, userId);
     Task saved = taskRepository.save(task);
-    reminderHook.onTaskChanged(userId, saved.getId(), saved.getDueAt());
+    syncReminder(saved, user);
     return TaskMapper.toResponse(saved);
   }
 
   @Transactional
   public TaskResponse update(UUID userId, UUID taskId, TaskRequest request) {
     Task task = requireOwnedTask(userId, taskId);
+    User user = userService.requireUser(userId);
     task.setTitle(request.title().trim());
     apply(task, request, userId);
     Task saved = taskRepository.save(task);
-    reminderHook.onTaskChanged(userId, saved.getId(), saved.getDueAt());
+    syncReminder(saved, user);
     return TaskMapper.toResponse(saved);
   }
 
@@ -126,6 +130,30 @@ public class TaskService {
             ? null
             : eventService.requireOwnedEvent(userId, request.eventId()));
     task.setSubtasks(validateSubtasks(request.subtasks()));
+    task.setReminderOffsetMinutes(request.reminderOffsetMinutes());
+  }
+
+  /** Mantiene el recordatorio de la tarea: lo cancela si está hecha, sin fecha o desactivado. */
+  private void syncReminder(Task task, User user) {
+    Integer offset = task.getReminderOffsetMinutes();
+    boolean enabled =
+        offset != null
+            && task.getDueAt() != null
+            && task.getStatus() != TaskStatus.done
+            && user.isNotifyTasks();
+    if (!enabled) {
+      reminderHook.onTaskChanged(user.getId(), task.getId(), task.getTitle(), null, null, null);
+      return;
+    }
+    Instant triggerAt = task.getDueAt().minus(offset, ChronoUnit.MINUTES);
+    String extra = task.getCourse() == null ? null : task.getCourse().getName();
+    reminderHook.onTaskChanged(
+        user.getId(),
+        task.getId(),
+        task.getTitle(),
+        ReminderText.body("Vence", task.getDueAt(), ZoneId.of(user.getTimezone()), extra),
+        triggerAt,
+        offset);
   }
 
   private List<Subtask> validateSubtasks(List<SubtaskRequest> requests) {
@@ -155,8 +183,8 @@ public class TaskService {
     return subtasks;
   }
 
-  /** Comprueba que el evento existe y es del usuario, sin exponer el evento completo. */
-  private Task requireOwnedTask(UUID userId, UUID taskId) {
+  /** Comprueba que la tarea existe y es del usuario, sin exponer la tarea completa. */
+  public Task requireOwnedTask(UUID userId, UUID taskId) {
     return taskRepository
         .findByIdAndUserId(taskId, userId)
         .orElseThrow(() -> ApiException.notFound("Tarea no encontrada."));

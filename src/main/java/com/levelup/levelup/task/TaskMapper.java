@@ -24,6 +24,7 @@ public final class TaskMapper {
         task.getCompletedAt(),
         task.isOverdue(),
         List.copyOf(task.getSubtasks()),
+        task.getReminderOffsetMinutes(),
         task.getCreatedAt(),
         task.getUpdatedAt());
   }

@@ -20,5 +20,6 @@ public record TaskResponse(
     Instant completedAt,
     boolean overdue,
     List<Subtask> subtasks,
+    Integer reminderOffsetMinutes,
     Instant createdAt,
     Instant updatedAt) {}
