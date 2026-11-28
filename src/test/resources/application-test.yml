@@ -19,3 +19,5 @@ app:
     cookie-secure: false
   cors:
     allowed-origins: http://localhost:5173
+  rate-limit:
+    enabled: false

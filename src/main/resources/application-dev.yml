@@ -1,0 +1,13 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+
+app:
+  seed:
+    enabled: true
+
+logging:
+  level:
+    com.levelup.levelup: DEBUG

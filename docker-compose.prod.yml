@@ -1,0 +1,62 @@
+name: levelup
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-levelup}
+      POSTGRES_USER: ${POSTGRES_USER:-levelup}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD en .env.prod}
+    volumes:
+      - levelup_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-levelup} -d ${POSTGRES_DB:-levelup}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  backend:
+    build: .
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-levelup}
+      DB_USER: ${POSTGRES_USER:-levelup}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?define POSTGRES_PASSWORD en .env.prod}
+      JWT_SECRET: ${JWT_SECRET:?define JWT_SECRET en .env.prod}
+      CORS_ORIGINS: ${CORS_ORIGINS:?define CORS_ORIGINS en .env.prod}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8080"
+
+  frontend:
+    build: ../frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    expose:
+      - "80"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?define DOMAIN en .env.prod}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+
+volumes:
+  levelup_pgdata:
+  caddy_data:
+  caddy_config:

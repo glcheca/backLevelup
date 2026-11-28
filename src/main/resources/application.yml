@@ -35,6 +35,13 @@ app:
     cookie-secure: ${COOKIE_SECURE:false}
   reminders:
     poll-interval-ms: ${REMINDER_POLL_INTERVAL_MS:30000}
+  seed:
+    enabled: ${SEED_ENABLED:false}
+  rate-limit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    window-seconds: ${RATE_LIMIT_WINDOW_SECONDS:60}
+    max-attempts: ${RATE_LIMIT_MAX_ATTEMPTS:10}
+    max-password-attempts: ${RATE_LIMIT_MAX_PASSWORD_ATTEMPTS:5}
 
 management:
   endpoints:

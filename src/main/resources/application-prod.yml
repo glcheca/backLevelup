@@ -1,0 +1,27 @@
+server:
+  forward-headers-strategy: framework
+  compression:
+    enabled: true
+    mime-types: application/json,text/html,text/css,application/javascript,text/plain
+    min-response-size: 1024
+
+spring:
+  flyway:
+    clean-disabled: true
+
+app:
+  # Sin valores por defecto: el arranque falla si faltan en el entorno de producción.
+  jwt:
+    secret: ${JWT_SECRET}
+  cors:
+    allowed-origins: ${CORS_ORIGINS}
+  auth:
+    cookie-secure: true
+  seed:
+    enabled: false
+  rate-limit:
+    enabled: true
+
+logging:
+  level:
+    root: INFO

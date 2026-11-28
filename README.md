@@ -130,6 +130,59 @@ Etapa 3 — recordatorios, notificaciones y búsqueda:
 | `CORS_ORIGINS` | `http://localhost:5173` | Orígenes permitidos |
 | `COOKIE_SECURE` | `false` | `true` en producción con HTTPS |
 | `REMINDER_POLL_INTERVAL_MS` | `30000` | Frecuencia del job de recordatorios |
+| `SEED_ENABLED` | `false` | Siembra los datos demo (el perfil `dev` lo activa) |
+| `RATE_LIMIT_ENABLED` | `true` | Límite por IP en login, registro y cambio de contraseña |
+| `RATE_LIMIT_WINDOW_SECONDS` | `60` | Ventana deslizante del límite |
+| `RATE_LIMIT_MAX_ATTEMPTS` | `10` | Intentos por ventana en login/registro |
+| `RATE_LIMIT_MAX_PASSWORD_ATTEMPTS` | `5` | Intentos por ventana en cambio de contraseña |
+
+## Perfiles
+
+| Perfil | Uso | Particularidades |
+|---|---|---|
+| `default` | Desarrollo con PostgreSQL | Flyway, secretos de desarrollo |
+| `dev` | Demos y pruebas manuales | Activa `app.seed.enabled` y siembra los datos demo |
+| `h2` | Pruebas sin PostgreSQL | Esquema creado por Hibernate, datos efímeros |
+| `test` | Tests automáticos | H2, rate limit desactivado, secreto de prueba |
+| `prod` | Despliegue | Sin valores por defecto para `JWT_SECRET` ni `CORS_ORIGINS`; cookies `Secure` |
+
+### Datos demo
+
+`DemoDataSeeder` se ejecuta al arrancar con el perfil `dev` (o `SEED_ENABLED=true`) y es
+idempotente: si el usuario ya existe no vuelve a sembrar nada.
+
+| Email | Contraseña |
+|---|---|
+| `demo@levelup.test` | `Demo1234!` |
+
+Crea 5 cursos con horario, 20 eventos, 15 tareas, 10 apuntes y 17 evaluaciones.
+
+## Seguridad
+
+- Contraseñas con BCrypt; JWT firmado con HS384.
+- Rate limit en memoria por IP para `POST /auth/login`, `POST /auth/register` y
+  `POST /me/password` (responde `429` con `Retry-After`).
+- Cabeceras: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: no-referrer`, `Cache-Control: no-store` en respuestas autenticadas y HSTS
+  cuando la petición llega por HTTPS.
+- Errores con `ProblemDetail` sin filtrar detalles internos.
+
+## Despliegue
+
+- `Dockerfile`: build multi-stage (`bootJar`) sobre `eclipse-temurin:21-jre` con usuario sin
+  privilegios.
+- `docker-compose.prod.yml`: PostgreSQL + backend + frontend + Caddy.
+- `deploy/Caddyfile`: HTTPS automático para `DOMAIN`.
+- `application-prod.yml`: perfil de producción; el arranque falla si faltan secretos.
+
+```powershell
+Copy-Item .env.prod.example .env.prod
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+> El compose no se pudo ejecutar en la máquina de desarrollo (Docker no instalado); queda como
+> artefacto listo para probar en el servidor.
+
 
 ## Migraciones
 
@@ -143,12 +196,12 @@ Nunca uses `ddl-auto=update`: el esquema se versiona con SQL.
 ```
 
 Los tests usan el perfil `test` con H2 en memoria, así que **no necesitan
-PostgreSQL**. Son 64 tests que cubren autenticación (registro, duplicado, 401,
+PostgreSQL**. Son 66 tests que cubren autenticación (registro, duplicado, 401,
 perfil, login fallido, rotación de refresh y logout), cursos y horario, eventos,
 tareas, apuntes (búsqueda con tildes, etiquetas, aislamiento por usuario),
-calificaciones (promedio ponderado, pesos incompletos, proyección y validación)
-y Etapa 3 (recordatorios, job con reloj fijo, notificaciones, búsqueda global,
-cambio de contraseña y borrado de cuenta).
+calificaciones (promedio ponderado, pesos incompletos, proyección y validación),
+Etapa 3 (recordatorios, job con reloj fijo, notificaciones, búsqueda global,
+cambio de contraseña y borrado de cuenta) y Etapa 4 (rate limit y seed demo).
 
 ## Calidad de código
 
@@ -165,7 +218,7 @@ el CI falla si el formato o el estilo no se cumplen.
 
 ```
 com.levelup.levelup
-├─ config/     SecurityConfig, JwtProperties
+├─ config/     SecurityConfig, JwtProperties, RateLimitFilter
 ├─ common/     ApiException, GlobalExceptionHandler, PageResponse, TextNormalizer
 ├─ auth/       JWT, refresh tokens, /auth
 ├─ user/       entidad User, /me
@@ -176,5 +229,6 @@ com.levelup.levelup
 ├─ grade/      evaluaciones y promedio ponderado
 ├─ reminder/   recordatorios, job de despacho y hook de eventos/tareas
 ├─ notification/ notificaciones in-app
-└─ search/     búsqueda global (cursos, eventos, tareas, apuntes)
+├─ search/     búsqueda global (cursos, eventos, tareas, apuntes)
+└─ seed/       datos demo para el perfil dev
 ```
